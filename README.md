@@ -14,7 +14,10 @@ The original CSV is read-only from the analysis script's perspective: the script
 
 - Python 3
 - pandas for reading, profiling, summarizing, and validating tabular data
+- Plotly for interactive dashboard charts
 - matplotlib for charts
+- openpyxl for `.xlsx` uploads
+- tabulate for Markdown report tables
 - Standard Python libraries for file paths and error messages
 
 ## Data-quality checks
@@ -22,6 +25,16 @@ The original CSV is read-only from the analysis script's perspective: the script
 The script reports the dataset shape, columns, data types, first five rows, missing values, exact duplicate rows, and category labels that differ only by case or surrounding whitespace. It checks numeric columns for exploratory outliers using the 1.5×IQR rule and reports the bounds and any flagged values without deleting them.
 
 It also calculates numeric descriptive statistics and categorical frequency distributions, then compares the observed `Churn` labels by `ContractType` when both columns exist.
+
+## Interactive dashboard
+
+`app.py` contains the Streamlit application. Its sidebar sections are Dashboard Overview, Data Quality, Data Explorer, Churn Analytics, Validation Results, Cleaning Workspace, and Reports. The project sample is available as a demonstration dataset; users can also upload CSV or `.xlsx` files. Uploaded files are analyzed in the current session and are not written over the sample dataset.
+
+The dashboard calculates missing-value completeness, exact duplicate rows and duplicate identifiers, likely text/numeric type mismatches, category capitalization/whitespace variants, recognizable negative numeric values, churn labels when recognizable, 1.5×IQR review flags, and an exploratory charge-versus-tenure check when suitable columns exist. It does not impose a universal mandatory schema on uploaded files.
+
+The quality score is **evaluated PASS checks divided by all evaluated checks, multiplied by 100**. Each rule has equal weight; WARNING and FAIL checks count as not passed, and NOT APPLICABLE checks are excluded. The displayed bands are Excellent (90–100%), Good (75–<90%), Needs Review (50–<75%), and Poor (<50%). This is a transparent summary of the implemented checks, not a certified business-quality metric.
+
+Cleaning actions run on a separate in-session working copy. Users preview proposed changes and must explicitly confirm before applying them. The original sample or uploaded file is not overwritten; outliers are flagged but never removed automatically. The working copy can be restored from the current session's original data.
 
 ## Cleaning decisions
 
@@ -40,6 +53,9 @@ In the supplied 15-record sample, 7 records are labeled `Yes` for churn and 8 ar
 ├── customer_churn_sample (1).csv   # Supplied source data; preserved unchanged
 ├── data-analytics-task-1 (1).md    # Supplied task guide
 ├── data_quality_analysis.py        # Reproducible profiling and analysis script
+├── app.py                          # Interactive Streamlit dashboard
+├── .streamlit/
+│   └── config.toml                 # Default light dashboard theme
 ├── cleaned_customer_churn.csv      # Generated cleaned copy
 ├── data_quality_summary.md         # Generated findings and limitations
 ├── validation_results.txt          # Generated validation check results
@@ -60,6 +76,7 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 python .\data_quality_analysis.py
+python -m streamlit run .\app.py --server.address 127.0.0.1 --server.port 8501
 ```
 
 If PowerShell blocks environment activation, run the script with the virtual-environment interpreter directly:
@@ -67,9 +84,24 @@ If PowerShell blocks environment activation, run the script with the virtual-env
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe .\data_quality_analysis.py
+.\.venv\Scripts\python.exe -m streamlit run .\app.py --server.address 127.0.0.1 --server.port 8501
 ```
 
 The input CSV must remain in the project root with the exact supplied filename `customer_churn_sample (1).csv`. The script prints profile and validation results and writes or refreshes the cleaned CSV, Markdown report, validation text, and chart images.
+
+### Launch the interactive dashboard
+
+From the project root, run:
+
+```powershell
+python -m streamlit run .\app.py --server.address 127.0.0.1 --server.port 8501
+```
+
+Streamlit will print a local address. Open **http://localhost:8501** in your browser if it does not open automatically. Binding to `127.0.0.1` keeps the dashboard on your computer instead of exposing it on the network. The dashboard reads the cleaned CSV, validation results, and summary report using paths relative to `app.py`; it also checks whether the analysis chart files exist. If the cleaned CSV is missing but the original CSV exists, it displays the original data with a warning. Missing reports, validation files, or saved chart images are reported in the dashboard rather than causing a crash. The interactive charts are drawn from the currently loaded dataset. Rerun `python .\data_quality_analysis.py` to regenerate analysis outputs.
+
+The dashboard includes a demonstration dataset and CSV/Excel upload option, executive KPIs with a transparent quality score, missing-value and severity charts, IQR review, interactive numeric and churn charts, a searchable/filterable/sortable explorer, paginated records, a cleaning workspace with preview and confirmation, validation results, and downloadable data and Markdown reports. Rules are based on fields detected in the active dataset; rules that cannot be evaluated are reported as not applicable.
+
+The dashboard heading is followed by the subtitle **“Data Quality Assessment and Validation Report.”** Choose Light or Dark appearance in the sidebar. The local run command binds to `127.0.0.1`; uploads are kept in the active Streamlit session and are not written to project files.
 
 ## Limitations
 

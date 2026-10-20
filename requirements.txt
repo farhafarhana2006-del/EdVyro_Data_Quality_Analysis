@@ -1,2 +1,6 @@
 pandas
 matplotlib
+streamlit
+plotly
+openpyxl
+tabulate
