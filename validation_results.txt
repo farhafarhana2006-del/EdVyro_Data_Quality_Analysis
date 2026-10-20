@@ -1,0 +1,11 @@
+Source shape: (15, 11)
+Cleaned output shape: (15, 11)
+
+PASS: Cleaned file has the same row count as source — source=15, cleaned=15
+PASS: Cleaned file has the same column count as source — source=11, cleaned=11
+PASS: Cleaned file preserves source column names and order — columns=['CustomerID', 'Gender', 'Age', 'TenureMonths', 'SubscriptionType', 'MonthlyCharges', 'TotalCharges', 'ContractType', 'SupportTickets', 'PaymentMethod', 'Churn']
+PASS: Saved CSV preserves source values and row order — Compared the original data with the CSV read back from disk.
+PASS: Output CSV can be read back with the same shape — source=(15, 11), reread_output=(15, 11)
+PASS: No missing values in cleaned dataset — missing_cells=0
+PASS: No exact duplicate rows in cleaned dataset — duplicate_rows=0
+PASS: Original numeric columns remain numeric — checked=['Age', 'TenureMonths', 'MonthlyCharges', 'TotalCharges', 'SupportTickets']
