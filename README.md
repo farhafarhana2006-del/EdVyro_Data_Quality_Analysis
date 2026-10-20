@@ -30,6 +30,64 @@ It also calculates numeric descriptive statistics and categorical frequency dist
 
 `app.py` contains the Streamlit application. Its sidebar sections are Dashboard Overview, Data Quality, Data Explorer, Churn Analytics, Validation Results, Cleaning Workspace, and Reports. The project sample is available as a demonstration dataset; users can also upload CSV or `.xlsx` files. Uploaded files are analyzed in the current session and are not written over the sample dataset.
 
+## React dashboard (new frontend)
+
+The React/Vite dashboard is an additional interface to the same Python analysis; the original `app.py`, analysis functions, datasets, and generated reports are retained. A local Flask API reads the project CSVs and calls the original analysis validation and IQR functions. The browser does not write to either CSV. API routes are limited to dashboard data, validation, cleaned records, and fixed report downloads; arbitrary local file paths are not accepted.
+
+The React interface includes the five project KPIs, column profile, data-quality checks, the existing Python validation rules, missing-value and churn charts, contract/subscription summaries, a selectable numeric distribution, searchable and filterable records, pagination, and report downloads. The numeric distribution uses dynamically calculated bins for display; the source of the data and quality checks remains Python.
+
+### Start the React dashboard on Windows
+
+Open two VS Code PowerShell terminals, both in the project folder. Install the dependencies once:
+
+```powershell
+python -m pip install -r .\requirements.txt
+Push-Location .\frontend
+npm install
+Pop-Location
+```
+
+In **terminal 1**, start the API from the project root:
+
+```powershell
+python .\backend\app.py
+```
+
+In **terminal 2**, start Vite:
+
+```powershell
+Set-Location .\frontend
+npm run dev
+```
+
+Open **http://localhost:5173**. The React development server proxies `/api` requests to the local Flask service at `http://127.0.0.1:5000`. Keep both terminals running while using the dashboard. The API is bound to localhost and allows browser requests only from the local Vite origins. To stop either service, press **Ctrl+C** in its terminal.
+
+To create and check a production frontend bundle:
+
+```powershell
+Set-Location .\frontend
+npm run build
+```
+
+### Project layout
+
+```text
+backend/
+└── app.py                 # Local Flask API; reads existing project outputs
+frontend/
+├── index.html
+├── package.json
+├── vite.config.js
+└── src/
+    ├── App.jsx
+    ├── main.jsx
+    └── styles.css
+data_quality_analysis.py   # Original Python analysis remains authoritative
+app.py                      # Existing Streamlit dashboard remains available
+```
+
+The API requires the original sample CSV, generated cleaned CSV, and existing analysis/report outputs in the project root. If either required data CSV is missing, the React page displays an API error rather than inventing KPI values. Validation results are evaluated by the Python script's existing validation functions against the current source and cleaned CSV.
+
 The dashboard calculates missing-value completeness, exact duplicate rows and duplicate identifiers, likely text/numeric type mismatches, category capitalization/whitespace variants, recognizable negative numeric values, churn labels when recognizable, 1.5×IQR review flags, and an exploratory charge-versus-tenure check when suitable columns exist. It does not impose a universal mandatory schema on uploaded files.
 
 The quality score is **evaluated PASS checks divided by all evaluated checks, multiplied by 100**. Each rule has equal weight; WARNING and FAIL checks count as not passed, and NOT APPLICABLE checks are excluded. The displayed bands are Excellent (90–100%), Good (75–<90%), Needs Review (50–<75%), and Poor (<50%). This is a transparent summary of the implemented checks, not a certified business-quality metric.

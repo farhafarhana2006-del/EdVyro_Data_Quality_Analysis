@@ -4,3 +4,5 @@ streamlit
 plotly
 openpyxl
 tabulate
+Flask
+Flask-Cors
